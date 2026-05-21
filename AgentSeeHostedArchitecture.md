@@ -1,5 +1,3 @@
----
-
 ## AgentSee Hosted Architecture
 
 ### Stack decisions
