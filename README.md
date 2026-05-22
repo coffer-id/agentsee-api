@@ -7,21 +7,21 @@ The hosted service layer for [AgentSee](https://github.com/hypositivist/agent_fr
 | Path | What it is |
 |---|---|
 | `app/` | FastAPI application |
-| `infra/k8s/agentsee/` | Kubernetes manifests for all AgentSee components |
 
-Terraform infrastructure lives in `agent-intel-mvp` alongside the existing modules. See [Terraform changes](#terraform-changes) below.
+Infrastructure (Terraform + Kubernetes manifests) lives in [`agentsee-infra`](https://github.com/shaolin-shen/agentsee-infra).
 
 ## Related repos
 
 | Repo | Role |
 |---|---|
+| [`agentsee-infra`](https://github.com/shaolin-shen/agentsee-infra) | Terraform + Kubernetes manifests for AgentSee |
 | [`agent_friction_score_impl`](https://github.com/hypositivist/agent_friction_score_impl) | Audit engine — runs site audits, produces `result.json` |
 | [`ReportGenerator`](https://github.com/hypositivist/ReportGenerator) | Report renderer — consumes audit results, produces PDF/HTML |
 | [`agent-intel-mvp`](https://github.com/hypositivist/agent-intel-mvp) | Shared AWS/GCP infrastructure (EKS cluster, VPC, ECR, Secrets Manager) |
 
 ## Architecture
 
-See [AgentSeeHostedArchitecture.md](AgentSeeHostedArchitecture.md) for the full design.
+See [AgentSeeHostedArchitecture.md](https://github.com/shaolin-shen/agentsee-infra/blob/main/AgentSeeHostedArchitecture.md) in `agentsee-infra` for the full design.
 
 The short version:
 
@@ -69,53 +69,26 @@ uvicorn app.main:app --reload
 
 ## Deployment
 
-AgentSee deploys into the `agentsee` namespace on the existing `agent-intel-{env}` EKS cluster. It does not create a new cluster.
+All infrastructure (VPC, EKS, k8s manifests) lives in [`agentsee-infra`](https://github.com/shaolin-shen/agentsee-infra). See that repo for deployment steps.
 
-### 1. Provision storage
-
-Storage modules live in `agent-intel-mvp`. From that repo:
-
-```bash
-cd terraform/envs/aws
-terraform apply -target=module.agentsee_storage
-```
-
-### 2. Apply Kubernetes manifests
-
-```bash
-kubectl apply -k infra/k8s/agentsee/
-```
-
-### 3. Build and push images
+### Build and push images
 
 Images are pushed to the existing ECR registry from `agent-intel-mvp`:
 
 ```bash
-# audit-worker image is built from agent_friction_score_impl
-# report-worker image is built from ReportGenerator
-# agentsee-api and claude-code-fetcher are built from this repo
+# agentsee-api image is built from this repo and pushed to ECR
 ```
 
-### 4. Verify
+### Verify
 
 ```bash
 kubectl -n agentsee get pods
 kubectl -n agentsee get ingress
 ```
 
-## Terraform changes
-
-All Terraform lives in `agent-intel-mvp` to avoid cross-state dependencies — the AgentSee storage modules need the OIDC provider ARN, VPC ID, and EKS security group IDs that are already outputs of that state.
-
-What gets added there:
-- `terraform/modules/aws/agentsee-storage/` — S3 runs + reports buckets, IRSA roles
-- `terraform/modules/gcp/agentsee-storage/` — GCS equivalents, Workload Identity bindings
-- 4 service names added to the existing `registry` module `for_each`
-- New `agentsee/{env}/app` entry in the existing `secrets` module
-
 ## Secrets
 
-Secrets are managed via External Secrets Operator (already installed on the cluster) reading from AWS Secrets Manager path `agentsee/{environment}/app`.
+Secrets are managed via External Secrets Operator reading from AWS Secrets Manager path `agentsee/{environment}/app`. See [`agentsee-infra`](https://github.com/shaolin-shen/agentsee-infra) for the ESO manifests.
 
 Required keys:
 
