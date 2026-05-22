@@ -14,14 +14,14 @@ Infrastructure (Terraform + Kubernetes manifests) lives in [`agentsee-infra`](ht
 
 | Repo | Role |
 |---|---|
-| [`agentsee-infra`](https://github.com/shaolin-shen/agentsee-infra) | Terraform + Kubernetes manifests for AgentSee |
+| [`agentsee-infra`](https://github.com/coffer-id/agentsee-infra) | Terraform + Kubernetes manifests for AgentSee |
 | [`agent_friction_score_impl`](https://github.com/hypositivist/agent_friction_score_impl) | Audit engine — runs site audits, produces `result.json` |
 | [`ReportGenerator`](https://github.com/hypositivist/ReportGenerator) | Report renderer — consumes audit results, produces PDF/HTML |
 | [`agent-intel-mvp`](https://github.com/hypositivist/agent-intel-mvp) | Shared AWS/GCP infrastructure (EKS cluster, VPC, ECR, Secrets Manager) |
 
 ## Architecture
 
-See [AgentSeeHostedArchitecture.md](https://github.com/shaolin-shen/agentsee-infra/blob/main/AgentSeeHostedArchitecture.md) in `agentsee-infra` for the full design.
+See [AgentSeeHostedArchitecture.md](https://github.com/coffer-id/agentsee-infra/blob/main/AgentSeeHostedArchitecture.md) in `agentsee-infra` for the full design.
 
 The short version:
 
@@ -69,7 +69,7 @@ uvicorn app.main:app --reload
 
 ## Deployment
 
-All infrastructure (VPC, EKS, k8s manifests) lives in [`agentsee-infra`](https://github.com/shaolin-shen/agentsee-infra). See that repo for deployment steps.
+All infrastructure (VPC, EKS, k8s manifests) lives in [`agentsee-infra`](https://github.com/coffer-id/agentsee-infra). See that repo for deployment steps.
 
 ### Build and push images
 
@@ -88,7 +88,7 @@ kubectl -n agentsee get ingress
 
 ## Secrets
 
-Secrets are managed via External Secrets Operator reading from AWS Secrets Manager path `agentsee/{environment}/app`. See [`agentsee-infra`](https://github.com/shaolin-shen/agentsee-infra) for the ESO manifests.
+Secrets are managed via External Secrets Operator reading from AWS Secrets Manager path `agentsee/{environment}/app`. See [`agentsee-infra`](https://github.com/coffer-id/agentsee-infra) for the ESO manifests.
 
 Required keys:
 
