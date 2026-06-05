@@ -60,11 +60,16 @@ Full request/response shapes are in [AgentSeeHostedArchitecture.md](AgentSeeHost
 
 ```bash
 # Install dependencies
+python -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
 
 # Run API locally (requires Redis running)
 docker run -p 6379:6379 redis:7-alpine
 uvicorn app.main:app --reload
+
+# Run tests
+pytest
 ```
 
 ## Deployment
