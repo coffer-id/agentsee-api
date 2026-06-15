@@ -108,19 +108,31 @@ class RedisStore(Store):
         }
         key = self._audit_key(payload["run_id"])
         await self.redis.hset(key, mapping={k: str(v) for k, v in record.items()})
-        await self.redis.xadd(
-            self.audit_stream,
-            {
-                "event_type": "run.requested",
-                "tenant_id": payload["tenant_id"],
-                "run_id": payload["run_id"],
-                "trace_id": payload["trace_id"],
-                "seed_url": payload["seed_url"],
-                "user_intent": payload["user_intent"],
-                "auto_report": json.dumps(payload["auto_report"]),
-                "report_format": payload["report_format"],
-            },
-        )
+
+        event = {
+            "event_type": "run.requested",
+            "tenant_id": payload["tenant_id"],
+            "run_id": payload["run_id"],
+            "trace_id": payload["trace_id"],
+            "seed_url": payload["seed_url"],
+            "user_intent": payload["user_intent"],
+            "auto_report": json.dumps(payload["auto_report"]),
+            "report_format": payload["report_format"],
+            "profile": payload["profile"],
+            "scope": payload["scope"],
+            "archetype": payload["archetype"],
+            "fanout": json.dumps(payload["fanout"]),
+            "bare_fetch": json.dumps(payload["bare_fetch"]),
+        }
+        if payload.get("urls"):
+            event["urls"] = json.dumps(payload["urls"])
+        if payload.get("site_context"):
+            event["site_context"] = json.dumps(payload["site_context"])
+        for field in ("n_pages", "breadth", "depth"):
+            if payload.get(field) is not None:
+                event[field] = str(payload[field])
+
+        await self.redis.xadd(self.audit_stream, event)
         return record
 
     async def get_audit(self, run_id: str) -> dict[str, Any]:
