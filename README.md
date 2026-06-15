@@ -46,6 +46,44 @@ GET  /reports/{run_id}            Poll report status + presigned download URL
 
 Full request/response shapes are in [AgentSeeHostedArchitecture.md](AgentSeeHostedArchitecture.md#api-contract).
 
+### `POST /audits` parameters
+
+The audit request exposes the friction-engine knobs so any of the documented
+customer runs can be reproduced as a single call. All fields beyond `tenant_id`
+and `seed_url` are optional; the defaults reproduce the prior behavior.
+
+| Field | Default | Notes |
+|---|---|---|
+| `tenant_id` | — | Required |
+| `seed_url` | — | Required; seed/target URL |
+| `user_intent` | `browsing` | e.g. `competitive_intel`, `shopping`, `comparison` |
+| `profile` | `web-search` | `web-search` or `api-consumer` (API-docs audit) |
+| `scope` | `site` | `site` (multi-page) or `page` (single URL); web-search only |
+| `archetype` | `claude-code` | `httpx`, `anthropic`, or `claude-code` |
+| `fanout` | `false` | Web-search only; improves findability confidence |
+| `bare_fetch` | `false` | Skip search/synthesis stages |
+| `urls` | — | Explicit URL list (scope=site); skips discovery/sampling |
+| `n_pages` / `breadth` / `depth` | — | Crawl tuning when discovering pages |
+| `site_context` | — | Inline site profile (grounds seed queries); web-search only |
+| `auto_report` | `true` | Auto-request a report on finalize (web-search only) |
+| `report_format` | `pdf` | `pdf` or `html` |
+
+`api-consumer` rejects `urls`, `site_context`, and `fanout`; `scope=page` rejects `urls`.
+
+Example — reproduce the WaterGuru run:
+
+```json
+{
+  "tenant_id": "tenant_abc",
+  "seed_url": "https://waterguru.com",
+  "user_intent": "competitive_intel",
+  "archetype": "anthropic",
+  "fanout": true,
+  "urls": ["https://waterguru.com/...", "..."],
+  "site_context": {"site": "waterguru.com", "category": "..."}
+}
+```
+
 ## Prerequisites
 
 | Requirement | Notes |

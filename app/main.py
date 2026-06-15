@@ -83,6 +83,16 @@ async def create_audit(req: AuditCreateRequest, store: Store = Depends(get_store
             "user_intent": req.user_intent,
             "auto_report": req.auto_report,
             "report_format": req.report_format,
+            "profile": req.profile,
+            "scope": req.scope,
+            "archetype": req.archetype,
+            "fanout": req.fanout,
+            "bare_fetch": req.bare_fetch,
+            "urls": req.urls,
+            "n_pages": req.n_pages,
+            "breadth": req.breadth,
+            "depth": req.depth,
+            "site_context": req.site_context,
         }
     )
 
